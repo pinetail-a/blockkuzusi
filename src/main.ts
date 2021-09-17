@@ -1,4 +1,4 @@
 export const helloFunc = (): string => {
-  return 'Hello World';
+  return 'Hello';
 };
 console.log(helloFunc());
