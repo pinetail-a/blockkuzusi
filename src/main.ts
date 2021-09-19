@@ -1,10 +1,27 @@
 const canvas = document.getElementById('myCanvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 const ballRadius = 10;
-let x = canvas.width / 2;
-let y = canvas.height - 30;
-let dx = 2;
-let dy = -2;
+const ballcount = 2;
+
+class Ball {
+  constructor(
+    public x: number,
+    public y: number,
+    public dx: number,
+    public dy: number
+  ) {
+    this.x = x;
+    this.y = y;
+    this.dx = dx;
+    this.dy = dy;
+  }
+}
+
+const ball: Ball[] = [];
+for (let i = 0; i < ballcount; i++) {
+  ball[i] = new Ball(canvas.width / 2, canvas.height - 30, i + 1, -(i + 1));
+}
+
 const paddleHeight = 10;
 const paddleWidth = 75;
 let paddleX = (canvas.width - paddleWidth) / 2;
@@ -56,23 +73,26 @@ function mouseMoveHandler(e: MouseEvent) {
     paddleX = relativeX - paddleWidth / 2;
   }
 }
+
 function collisionDetection() {
   for (let c = 0; c < brickColumnCount; c++) {
     for (let r = 0; r < brickRowCount; r++) {
       const b = bricks[c][r];
-      if (b.status == 1) {
-        if (
-          x > b.x &&
-          x < b.x + brickWidth &&
-          y > b.y &&
-          y < b.y + brickHeight
-        ) {
-          dy = -dy;
-          b.status = 0;
-          score++;
-          if (score == brickRowCount * brickColumnCount) {
-            alert('YOU WIN, CONGRATS!');
-            document.location.reload();
+      for (let i = 0; i < ballcount; i++) {
+        if (b.status == 1) {
+          if (
+            ball[i].x > b.x &&
+            ball[i].x < b.x + brickWidth &&
+            ball[i].y > b.y &&
+            ball[i].y < b.y + brickHeight
+          ) {
+            ball[i].dy = -ball[i].dy;
+            b.status = 0;
+            score++;
+            if (score == brickRowCount * brickColumnCount) {
+              alert('YOU WIN, CONGRATS!');
+              document.location.reload();
+            }
           }
         }
       }
@@ -81,12 +101,15 @@ function collisionDetection() {
 }
 
 function drawBall() {
-  ctx.beginPath();
-  ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-  ctx.fillStyle = '#0095DD';
-  ctx.fill();
-  ctx.closePath();
+  for (let i = 0; i < ballcount; i++) {
+    ctx.beginPath();
+    ctx.arc(ball[i].x, ball[i].y, ballRadius, 0, Math.PI * 2);
+    ctx.fillStyle = '#0095DD';
+    ctx.fill();
+    ctx.closePath();
+  }
 }
+
 function drawPaddle() {
   ctx.beginPath();
   ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
@@ -130,26 +153,30 @@ function draw() {
   drawScore();
   drawLives();
   collisionDetection();
-
-  if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
-    dx = -dx;
-  }
-  if (y + dy < ballRadius) {
-    dy = -dy;
-  } else if (y + dy > canvas.height - ballRadius) {
-    if (x > paddleX && x < paddleX + paddleWidth) {
-      dy = -dy;
-    } else {
-      lives--;
-      if (!lives) {
-        alert('GAME OVER');
-        document.location.reload();
+  for (let i = 0; i < ballcount; i++) {
+    if (
+      ball[i].x + ball[i].dx > canvas.width - ballRadius ||
+      ball[i].x + ball[i].dx < ballRadius
+    ) {
+      ball[i].dx = -ball[i].dx;
+    }
+    if (ball[i].y + ball[i].dy < ballRadius) {
+      ball[i].dy = -ball[i].dy;
+    } else if (ball[i].y + ball[i].dy > canvas.height - ballRadius) {
+      if (ball[i].x > paddleX && ball[i].x < paddleX + paddleWidth) {
+        ball[i].dy = -ball[i].dy;
       } else {
-        x = canvas.width / 2;
-        y = canvas.height - 30;
-        dx = 3;
-        dy = -3;
-        paddleX = (canvas.width - paddleWidth) / 2;
+        lives--;
+        if (!lives) {
+          alert('GAME OVER');
+          document.location.reload();
+        } else {
+          ball[i].x = canvas.width / 2;
+          ball[i].y = canvas.height - 30;
+          ball[i].dx = 3;
+          ball[i].dy = -3;
+          paddleX = (canvas.width - paddleWidth) / 2;
+        }
       }
     }
   }
@@ -159,9 +186,11 @@ function draw() {
   } else if (leftPressed && paddleX > 0) {
     paddleX -= 7;
   }
+  for (let i = 0; i < ballcount; i++) {
+    ball[i].x += ball[i].dx;
+    ball[i].y += ball[i].dy;
+  }
 
-  x += dx;
-  y += dy;
   requestAnimationFrame(draw);
 }
 
