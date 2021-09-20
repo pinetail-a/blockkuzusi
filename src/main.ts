@@ -36,6 +36,11 @@ const brickOffsetTop = 30;
 const brickOffsetLeft = 30;
 let score = 0;
 let lives = 3;
+const brickColor: string[][] = [
+  ['#FF0000', '#00FF00', '#FF0000', '#FF0000', '#FF0000'],
+  ['#FF0000', '#FF0000', '#FF0000', '#FF0000', '#FF0000'],
+  ['#FF0000', '#FF0000', '#FF0000', '#008000', '#FF0000'],
+];
 
 type Tbrick = { x: number; y: number; status: number };
 
@@ -127,7 +132,7 @@ function drawBricks() {
         bricks[c][r].y = brickY;
         ctx.beginPath();
         ctx.rect(brickX, brickY, brickWidth, brickHeight);
-        ctx.fillStyle = '#0095DD';
+        ctx.fillStyle = brickColor[c][r];
         ctx.fill();
         ctx.closePath();
       }
